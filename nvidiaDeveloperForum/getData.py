@@ -33,14 +33,27 @@ while True:
         topics = data["topic_list"]["topics"]
         for i in range(len(topics)):
             topic = topics[i]
-            title = topics["title"]
-            views = topic["views"]
-            
-            post_url = base_post_url + data["topic_list"]["topics"][i]["slug"]
+            topic_entry = {}
+            topic_entry["title"] = topic["title"]
+            topic_entry["views"] = topic["views"]
+            topic_entry["created_at"] = topic["created_at"]
+            topic_entry["last_posted_at"] = topic["last_posted_at"]
+            topic_entry["posts_count"] = topic["posts_count"]
+            topic_entry["reply_count"] = topic["reply_count"]
+            topic_entry["like_count"] = topic["like_count"]
+            topic_entry["has_accepted_answer"] = topic["has_accepted_answer"]
+            topic_entry["tags"] = topic["tags"]
+            post_url = base_post_url + topic["slug"]
             post_res = requests.get(post_url)
+            post_index = 1
             soup = BeautifulSoup(post_res.text, 'html.parser')
             for post in soup.find_all('div',attrs={'class':'post'}):
-                post_text = post.p.text
+                post_text = post.find_all('p')
+                topic_entry["post%s"%str(post_index)] = {}
+                for i in range(len(post_text)):
+                    topic_entry["post%s"%str(post_index)]["floor%s"%str(i)] = post_text[i].text
+                post_index = post_index + 1
+
 
     except KeyError:
         if timeout_counter >= 3:
